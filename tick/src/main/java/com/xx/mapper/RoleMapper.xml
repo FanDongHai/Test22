@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xx.dao.IRoleDao">
+	
+	<resultMap id="roleMap" type="Role">
+		<id column="roid" jdbcType="INTEGER" property="roid" />
+		<result column="info" jdbcType="VARCHAR" property="info" />
+		<result column="rname" jdbcType="VARCHAR" property="rname" />
+		<result column="parentId" jdbcType="INTEGER" property="parentid" />
+		<collection property="authoritys"
+				javaType="java.util.ArrayList"
+				ofType="com.xx.entity.Authority"
+				resultMap="com.xx.dao.IAuthorityDao.authorityMap"
+		>
+		</collection>
+	</resultMap>
+	
+	<!-- 根据用户的no获取角色信息列表,利用表中id的关联关系(共用到3个表) -->
+	<select id="findRoleByUno" parameterType="string" resultType="string">
+		select * from t_user u
+		inner join t_userrole ur
+		on u.id = ur.uid
+		inner join t_role r
+		on r.roid = ur.rid
+		where u.no=#{no}
+	</select>
+	
+	<select id="findAllRolePage" parameterType="map" resultType="Role">
+		select * from t_role
+		<where>
+			<if test="rname!=null">
+				and rname=#{rname}
+			</if>
+		</where>
+		limit #{index}, #{size}
+	</select>
+	
+	<select id="count" resultType="int">
+		select count(1) from t_role
+	</select>
+	
+	<delete id="deleteRole" parameterType="int">
+		delete from t_role where roid=#{roid}
+	</delete>
+	
+	<select id="findRoleAutoById" resultMap="roleMap">
+		select * from t_role r 
+		inner join t_roleauthority ra
+		on r.roid = ra.rid
+		inner join t_authority a
+		on a.id = ra.aid
+	
+	</select>
+	
+	<select id="findRoleAutoById1" parameterType="int" resultMap="roleMap">
+		select * from t_role r 
+		inner join t_roleauthority ra
+		on r.roid = ra.rid
+		inner join t_authority a
+		on a.id = ra.aid
+		and roid=#{roid}
+	</select>
+	
+	<!-- <update id="updateRoleAuthoById" parameterType="int">
+		update t_authority set title=#{title} 
+		where id in 
+		(select a.id from t_role r 
+		inner join t_roleauthority ra 
+		on r.roid = ra.rid
+		inner join t_authority a
+		on ra.aid = a.id
+		where roid=#{roid})
+	</update> -->
+	
+	<insert id="addAuthByRoleId" parameterType="map">
+		insert into t_roleauthority(rid, aid) values (#{item.rid},
+			<foreach collection="list" item="item" separator=",">
+				 #{item.aid})
+			</foreach>
+	</insert>
+</mapper>

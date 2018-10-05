@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.xx.dao.IAuthorityDao">
+	<!-- 映射关系 -->
+	<resultMap id="authorityMap" type="Authority">
+		<id column="id" jdbcType="INTEGER" property="id" />
+		<result column="aicon" jdbcType="VARCHAR" property="aicon" />
+		<result column="aurl" jdbcType="VARCHAR" property="aurl" />
+		<result column="parentId" jdbcType="INTEGER"
+			property="parentid" />
+		<result column="title" jdbcType="VARCHAR" property="title" />
+		<result column="type" jdbcType="INTEGER" property="type" />
+	</resultMap>
+
+	<!-- 根据用户的no获取权限信息列表，利用表中的关联关系(共用到4个表) -->
+	<select id="findAuthorityByUno" parameterType="string" resultType="string">
+		select a.title from t_user u
+		inner join t_userrole ur
+		on u.id = ur.uid
+		inner join t_roleauthority ra
+		on ur.rid = ra.rid
+		inner join t_authority a
+		on a.id = ra.aid
+		where u.no = #{no}
+	</select>
+	
+	<select id="findAuthorityByUnoAndParentId" parameterType="map" resultType="Authority">
+		select a.* from t_user u
+		inner join t_userrole ur
+		on u.id = ur.uid
+		inner join t_roleauthority ra
+		on ur.rid = ra.rid
+		inner join t_authority a
+		on a.id = ra.aid
+		where u.no = #{no} and a.parentid=#{parentId}
+	</select>
+	
+	<select id="findAllAutoPage" parameterType="map" resultType="Authority">
+		select * from t_authority limit #{index}, #{size}
+	</select>
+	
+	<select id="count" resultType="int">
+		select count(1) from t_authority
+	</select>
+	
+	<delete id="deleteById" parameterType="int">
+		delete from t_authority where id=#{id}
+	</delete>
+	
+	<select id="findById" parameterType="int" resultType="Authority">
+		select * from t_authority where id=#{id}
+	</select>
+	
+	<update id="updateById" parameterType="Authority">
+		update t_authority set title=#{title} where id=#{id}
+	</update>
+	
+	<insert id="addAuth" parameterType="Authority">
+		insert into t_authority(aicon, aurl, parentId, title) values(#{aicon}, #{aurl}, #{parentId}, #{title})
+	</insert>
+	
+	<select id="findById2" resultType="Authority">
+		select * from t_authority where parentId=0
+	</select>
+	
+</mapper>
